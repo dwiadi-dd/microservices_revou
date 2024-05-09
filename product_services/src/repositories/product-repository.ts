@@ -2,9 +2,9 @@ import mysql from "mysql2";
 import { ProductModel } from "../models/product-model";
 
 export class ProductRepository {
-  private db: mysql.Connection;
+  private db: mysql.Pool;
 
-  constructor(db: mysql.Connection) {
+  constructor(db: mysql.Pool) {
     this.db = db;
   }
 
