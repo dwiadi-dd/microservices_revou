@@ -1,5 +1,5 @@
 import mysql from "mysql2";
-import { ProductModel } from "../models/product-model";
+import { CheckStockRequest, ProductModel } from "../models/product-model";
 
 export class ProductRepository {
   private db: mysql.Pool;
@@ -51,6 +51,46 @@ export class ProductRepository {
           resolve(rows.insertId);
         }
       );
+    });
+  }
+
+  checkStocks(checkStockRequest: CheckStockRequest): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      const query = `
+      SELECT name, quantity 
+      FROM products 
+      WHERE id = ${checkStockRequest.product_id} AND quantity >= ${checkStockRequest.quantity};
+    `;
+
+      this.db.query(
+        query,
+        (err: mysql.QueryError | null, rows: mysql.RowDataPacket[]) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+
+          if (rows.length > 0) {
+            resolve(true);
+          } else {
+            reject(new Error("product out of stock"));
+            return;
+          }
+        }
+      );
+    });
+  }
+
+  updateStock(productModel: ProductModel): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const q = `UPDATE products p SET p.stocks = p.stocks - (SELECT op.quantity FROM ordered_products op WHERE op.product_id = ${productModel.product_id}) WHERE p.product_id = ${productModel.product_id}`;
+      this.db.query(q, (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
     });
   }
 }
