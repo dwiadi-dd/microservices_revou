@@ -6,7 +6,8 @@ const config = {
   db_user: process.env.DB_USER || "root",
   db_password: process.env.DB_PASS || "",
   db_name: process.env.DB_TEST || "productservicesdb",
-  jwt_secret: process.env.SECRET_KEY || "",
+  rabbitmq_host: process.env.RABBIT_HOST || "productservicesdb",
+  jwt_secret: process.env.SECRET_KEY || "localhost",
 };
 
 export default config;
