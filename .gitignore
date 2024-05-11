@@ -1,8 +1,10 @@
 product_services/node_modules
 notif_services/node_modules
 order_services/node_modules
+user_services/node_modules
 
 
 product_services/.env
 notif_services/.env
 order_services/.env
+user_services/.env
