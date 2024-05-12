@@ -1,4 +1,7 @@
 import express from "express";
+import "dotenv/config";
+import morgan from "morgan";
+import cors from "cors";
 
 import { mysqlConnection } from "./config/connection";
 import { NotificationRepository } from "./repositories/notification-repository";
@@ -18,6 +21,8 @@ const startServer = async () => {
     );
 
     app.use(express.json());
+    app.use(cors());
+    app.use(morgan("dev"));
 
     // app.get("/products", notificationController.getAll);
     app.post("/notification", notificationController.create);
