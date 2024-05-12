@@ -1,4 +1,7 @@
 import express from "express";
+import "dotenv/config";
+import morgan from "morgan";
+import cors from "cors";
 
 import { mysqlConnection } from "./config/connection";
 
@@ -9,12 +12,15 @@ const app = express();
 
 const startServer = async () => {
   try {
-    const db = await mysqlConnection();
-    const userRepository = new UserRepository(db);
+    const sqlConnection = await mysqlConnection();
+    const userRepository = new UserRepository(sqlConnection);
     const userService = new UserService(userRepository);
     const userController = new UserController(userService);
 
     app.use(express.json());
+    app.use(cors());
+    app.use(morgan("dev"));
+
     app.post("/register", userController.register);
     app.post("/login", userController.login);
   } catch (err) {
