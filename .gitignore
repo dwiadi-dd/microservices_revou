@@ -8,3 +8,5 @@ product_services/.env
 notif_services/.env
 order_services/.env
 user_services/.env
+
+dump

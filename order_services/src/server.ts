@@ -1,4 +1,7 @@
 import express from "express";
+import "dotenv/config";
+import morgan from "morgan";
+import cors from "cors";
 
 import { mysqlConnection } from "./config/connection";
 import { OrderRepository } from "./repositories/order-repository";
@@ -16,6 +19,8 @@ const startServer = async () => {
     const orderController = new OrderController(orderService);
 
     app.use(express.json());
+    app.use(cors());
+    app.use(morgan("dev"));
 
     // app.get("/products", orderController.getAll);
     app.post("/products", orderController.create);
