@@ -24,7 +24,6 @@ const startServer = async () => {
     app.use(cors());
     app.use(morgan("dev"));
 
-    // app.get("/products", notificationController.getAll);
     app.post("/notification", notificationController.create);
   } catch (err) {
     console.error("failed to start server", err);

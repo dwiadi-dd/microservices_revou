@@ -7,7 +7,6 @@ const config = {
   db_password: process.env.DB_PASS || "ROOT",
   db_name: process.env.DB_TEST || "productservicesdb",
   rabbitmq_host: process.env.RABBIT_HOST || "localhost",
-  jwt_secret: process.env.SECRET_KEY || "localhost",
 };
 
 export default config;

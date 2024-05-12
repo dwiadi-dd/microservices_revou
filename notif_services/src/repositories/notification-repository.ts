@@ -13,17 +13,20 @@ export class NotificationRepository {
 
   create(createNotificationRequest: CreateNotifRequest): Promise<number> {
     return new Promise<number>((resolve, reject) => {
-      const q = `INSERT INTO notifications(message) 
-                values(${createNotificationRequest.message})`;
+      const q = `INSERT INTO notifications (message) 
+                values(?)`;
+      this.db.query(
+        q,
+        [createNotificationRequest.message],
+        (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
+          if (err) {
+            reject(err);
+            return;
+          }
 
-      this.db.query(q, (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
-        if (err) {
-          reject(err);
-          return;
+          resolve(rows.insertId);
         }
-
-        resolve(rows.insertId);
-      });
+      );
     });
   }
 }
