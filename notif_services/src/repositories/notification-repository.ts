@@ -11,13 +11,13 @@ export class NotificationRepository {
     this.db = db;
   }
 
-  create(createNotificationRequest: CreateNotifRequest): Promise<number> {
+  create(message: string): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       const q = `INSERT INTO notifications (message) 
                 values(?)`;
       this.db.query(
         q,
-        [createNotificationRequest.message],
+        [message],
         (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
           if (err) {
             reject(err);
