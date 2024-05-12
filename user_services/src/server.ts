@@ -8,6 +8,7 @@ import { mysqlConnection } from "./config/connection";
 import { UserRepository } from "./repositories/user-repository";
 import { UserService } from "./services/user-service";
 import { UserController } from "./controllers/user-controller";
+import { userRoutes } from "./router/user-router";
 const app = express();
 
 const startServer = async () => {
@@ -21,8 +22,7 @@ const startServer = async () => {
     app.use(cors());
     app.use(morgan("dev"));
 
-    app.post("/register", userController.register);
-    app.post("/login", userController.login);
+    app.use("/user", userRoutes(userController));
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);
