@@ -8,6 +8,7 @@ import {
 
 import { UserRepository } from "../repositories/user-repository";
 import { generateJwtToken } from "../utils";
+import { onUserAction, sendToQueue } from "../consumer/user-consumer";
 
 export class UserService {
   private userRepository: UserRepository;
@@ -28,6 +29,9 @@ export class UserService {
       role: "user",
     });
     const jwtToken = await generateJwtToken(createdUserId);
+    const msg = `User ${createUserRequest.email} has been created`;
+    console.log(msg);
+    onUserAction(msg);
 
     return {
       token: jwtToken,
@@ -46,6 +50,8 @@ export class UserService {
     }
 
     const jwtToken = await generateJwtToken(user);
+    const msg = `User ${loginUserRequest.email} is loggin`;
+    onUserAction(msg);
     return {
       token: jwtToken,
     };
