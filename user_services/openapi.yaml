@@ -3,10 +3,10 @@ info:
   title: User Microservices (Adi Bangkit)
   version: 1.0.0
 servers:
-  - url: http://localhost:5001
+  - url: http://localhost:8000/users
     variables:
       base_url:
-        default: https://localhost:5001
+        default: https://localhost:8000/users
         description: local
 tags:
   - name: User
