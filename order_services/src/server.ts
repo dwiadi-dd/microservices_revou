@@ -7,6 +7,7 @@ import { mysqlConnection } from "./config/connection";
 import { OrderRepository } from "./repositories/order-repository";
 import { OrderService } from "./services/order-service";
 import { OrderController } from "./controllers/order-controller";
+import { authenticationMiddleware } from "./middlewares/middleware";
 
 const app = express();
 
@@ -21,9 +22,9 @@ const startServer = async () => {
     app.use(express.json());
     app.use(cors());
     app.use(morgan("dev"));
-
+    app.use(authenticationMiddleware);
     // app.get("/products", orderController.getAll);
-    app.post("/products", orderController.create);
+    app.post("/order", orderController.create);
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);

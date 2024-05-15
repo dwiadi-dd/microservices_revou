@@ -9,7 +9,7 @@ export const generateJwtToken = (userId: number): Promise<string> => {
       sub: userId,
       exp: Math.floor(fiveMinutes / 1000),
     };
-    jwt.sign(payload, "ini_secret_kematian", (err, token) => {
+    jwt.sign(payload, process.env.SECRET_KEY as string, (err, token) => {
       if (err) {
         reject(err);
         return;
@@ -18,6 +18,19 @@ export const generateJwtToken = (userId: number): Promise<string> => {
     });
   });
 };
+
+export function verifyJwtToken(token: string): Promise<any> {
+  return new Promise<any>((resolve, reject) => {
+    jwt.verify(token, process.env.SECRET_KEY as string, (err, payload) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+
+      resolve(payload);
+    });
+  });
+}
 
 export const sendResponse = (
   res: express.Response,

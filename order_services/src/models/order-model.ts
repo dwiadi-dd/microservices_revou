@@ -1,22 +1,30 @@
 export interface OrderModel {
-    id: number
-    userId: number
-    productId: number
-    price: number
+  order_id: string;
+  user_id: number;
+  status: string;
 }
 
 export interface CreateOrderRequest {
-    productId: number
-    price: number
+  order_id: string;
+  user_id: number;
+  items: OrderItemList[];
+}
+
+export interface CreateOrderRequestHead {
+  order_id: string;
+  user_id: number;
+}
+export interface OrderItemList {
+  product_id: number;
+  quantity: number;
+}
+
+export interface OrderItem {
+  order_id: string;
+  product_id: number;
+  quantity: number;
 }
 
 export interface CreateOrderResponse {
-    id: number
-}
-
-export interface GetAllOrdersResponse {
-    id: number
-    userId: number
-    productId: number
-    price: number
+  order_id: string;
 }
