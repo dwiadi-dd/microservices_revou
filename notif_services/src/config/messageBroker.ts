@@ -1,43 +1,21 @@
-import amqp from "amqplib/callback_api";
-import { NotificationRepository } from "../repositories/notification-repository";
+import * as amqp from "amqplib";
 
-function listenForMessages(notificationRepository: NotificationRepository) {
-  amqp.connect(
-    `amqp://${process.env.RABBIT_HOST}`,
-    function (error0, connection) {
-      if (error0) {
-        throw error0;
-      }
-      connection.createChannel(function (error1, channel) {
-        if (error1) {
-          throw error1;
-        }
+async function consumeFromQueue(
+  queue: string,
+  callback: (message: any) => void
+) {
+  const rabbitmqHost = process.env.RABBIT_HOST || "localhost";
+  const rabbitmqUrl = `amqp://${rabbitmqHost}`;
 
-        const queue = "notificationQueue";
-
-        channel.assertQueue(queue, {
-          durable: false,
-        });
-
-        console.log(
-          " [*] Waiting for messages in %s. To exit press CTRL+C",
-          queue
-        );
-
-        channel.consume(
-          queue,
-          async function (msg) {
-            console.log(" [x] Received %s", msg?.content?.toString());
-            const message = msg?.content?.toString();
-            await notificationRepository.create(message as unknown as string);
-          },
-          {
-            noAck: false,
-          }
-        );
-      });
+  const connection = await amqp.connect(rabbitmqUrl);
+  const channel = await connection.createChannel();
+  await channel.assertQueue(queue);
+  channel.consume(queue, (msg) => {
+    if (msg !== null) {
+      callback(JSON.parse(msg.content.toString()));
+      channel.ack(msg);
     }
-  );
+  });
 }
 
-export { listenForMessages };
+export { consumeFromQueue };

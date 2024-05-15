@@ -1,23 +1,5 @@
-import * as amqp from "amqplib";
+import { consumeFromQueue } from "../config/messageBroker";
 import { NotificationRepository } from "../repositories/notification-repository";
-
-async function consumeFromQueue(
-  queue: string,
-  callback: (message: any) => void
-) {
-  const rabbitmqHost = process.env.RABBIT_HOST || "localhost";
-  const rabbitmqUrl = `amqp://${rabbitmqHost}`;
-
-  const connection = await amqp.connect(rabbitmqUrl);
-  const channel = await connection.createChannel();
-  await channel.assertQueue(queue);
-  channel.consume(queue, (msg) => {
-    if (msg !== null) {
-      callback(JSON.parse(msg.content.toString()));
-      channel.ack(msg);
-    }
-  });
-}
 
 async function createNotification(
   notificationRepository: NotificationRepository
@@ -36,4 +18,4 @@ async function createNotification(
     }
   });
 }
-export { consumeFromQueue, createNotification };
+export { createNotification };
