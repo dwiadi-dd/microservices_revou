@@ -61,7 +61,7 @@ services:
     ports:
       - "5001:5001"
     environment:
-      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
+      SECRET_KEY: ""
       HOST: "mysql-docker-micros"
       HOST_PORT: 5001
       DB_HOST: "mysql-docker-micros"
@@ -82,7 +82,7 @@ services:
     ports:
       - "5003:5003"
     environment:
-      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
+      SECRET_KEY: ""
       HOST: "mysql-docker-micros"
       HOST_PORT: 5003
       DB_HOST: "mysql-docker-micros"
