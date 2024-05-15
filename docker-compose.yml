@@ -16,40 +16,35 @@ services:
   #     KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
   #     ALLOW_PLAINTEXT_LISTENER: "yes"
 
-  rabbitmq:
+  rabbitmq-micros:
     image: "rabbitmq:3-management"
+    container_name: rabbitmq-micros
+    hostname: rabbitmq-micros
     ports:
       - 5672:5672
       - 15672:15672
-
-  kong-database:
-    image: mysql:8.3
-    environment:
-      MYSQL_DATABASE: kong
-      MYSQL_USER: kong
-      MYSQL_PASSWORD: kong
-      MYSQL_ROOT_PASSWORD: kong
+    networks:
+      - microservices
 
   kong:
-    image: kong:latest
-    depends_on:
-      - kong-database
+    image: kong
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8002:8002"
     environment:
-      KONG_DATABASE: mysql
-      KONG_PG_HOST: kong-database
-      KONG_PG_USER: kong
-      KONG_PG_PASSWORD: kong
-      KONG_PG_DB: kong
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
-    ports:
-      - 8000:8000
-      - 8443:8443
-      - 8001:8001
-      - 8444:8444
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+    volumes:
+      - ./kong.yml:/kong/declarative/kong.yml
+    networks:
+      - microservices
 
   konga:
     image: pantsel/konga:latest
@@ -59,3 +54,59 @@ services:
       - 1337:1337
     environment:
       NODE_ENV: production
+
+  user-service:
+    container_name: user-service
+    build: ./user_services
+    ports:
+      - "5001:5001"
+    environment:
+      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
+      HOST: "mysql-docker-micros"
+      HOST_PORT: 5001
+      DB_HOST: "mysql-docker-micros"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASS: "ROOT"
+      DB_NAME: "userservicesdb"
+      RABBIT_HOST: "rabbitmq-micros"
+    networks:
+      - microservices
+    depends_on:
+      - mysql-docker-micros
+      - rabbitmq-micros
+
+  notification-service:
+    container_name: notification-service
+    build: ./notif_services
+    ports:
+      - "5003:5003"
+    environment:
+      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
+      HOST: "mysql-docker-micros"
+      HOST_PORT: 5003
+      DB_HOST: "mysql-docker-micros"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASS: "ROOT"
+      DB_NAME: "notifservicesdb"
+      RABBIT_HOST: "rabbitmq-micros"
+    networks:
+      - microservices
+    depends_on:
+      - mysql-docker-micros
+      - rabbitmq-micros
+
+  mysql-docker-micros:
+    image: mysql:8.3
+    container_name: mysql-docker-micros
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "ROOT"
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    driver: bridge

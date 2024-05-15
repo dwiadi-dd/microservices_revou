@@ -5,7 +5,7 @@ import cors from "cors";
 
 import { mysqlConnection } from "./config/connection";
 import { NotificationRepository } from "./repositories/notification-repository";
-import { listenForMessages } from "./consumer/notif-consumer";
+import { createNotification } from "./consumer/notif-consumer";
 
 const app = express();
 
@@ -18,7 +18,7 @@ const startServer = async () => {
     app.use(express.json());
     app.use(cors());
     app.use(morgan("dev"));
-    listenForMessages(notificationRepository);
+    createNotification(notificationRepository);
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);
