@@ -24,6 +24,7 @@ const startServer = async () => {
 
     app.get("/products", productController.getAll);
     app.post("/products", productController.create);
+    app.delete("/products/:id", productController.delete);
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);

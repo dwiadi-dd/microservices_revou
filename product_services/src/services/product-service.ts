@@ -3,6 +3,7 @@ import {
   CreateProductResponse,
   GetProductResponse,
   ProductModel,
+  UpdateProductRequest,
 } from "../models/product-model";
 import { ProductRepository } from "../repositories/product-repository";
 export class ProductService {
@@ -40,5 +41,25 @@ export class ProductService {
     return {
       product_id: createdProductId,
     };
+  }
+
+  async update(
+    productId: number,
+    updateProductRequest: UpdateProductRequest
+  ): Promise<CreateProductResponse> {
+    const updatedProduct = await this.productRepository.update({
+      product_id: productId,
+      name: updateProductRequest?.name,
+      stocks: updateProductRequest?.stocks,
+      price: updateProductRequest?.price,
+    });
+
+    return {
+      product_id: productId,
+    };
+  }
+
+  async delete(productId: number): Promise<void> {
+    await this.productRepository.delete(productId);
   }
 }

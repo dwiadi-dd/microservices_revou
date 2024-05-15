@@ -17,9 +17,14 @@ export interface CreateProductRequest {
   stocks: number;
   price: number;
 }
+export interface UpdateProductRequest {
+  name: string;
+  stocks: number;
+  price: number;
+}
 
 export interface CheckStockRequest {
-  product_id: string;
+  product_id: number;
   quantity: number;
 }
 
