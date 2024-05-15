@@ -8,6 +8,7 @@ import { OrderRepository } from "./repositories/order-repository";
 import { OrderService } from "./services/order-service";
 import { OrderController } from "./controllers/order-controller";
 import { authenticationMiddleware } from "./middlewares/middleware";
+import { TransactionHelper } from "./config/transaction";
 
 const app = express();
 
@@ -16,7 +17,11 @@ const startServer = async () => {
     const db = await mysqlConnection();
 
     const orderRepository = new OrderRepository(db);
-    const orderService = new OrderService(orderRepository);
+    const transactionHelper = new TransactionHelper(db);
+    const orderService = new OrderService({
+      orderRepository,
+      transactionHelper,
+    });
     const orderController = new OrderController(orderService);
 
     app.use(express.json());

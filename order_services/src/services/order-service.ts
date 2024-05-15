@@ -1,4 +1,5 @@
-import { sendToQueue } from "../consumer/order-consumer";
+import { sendToQueue } from "../config/messageBroker";
+import { TransactionHelper } from "../config/transaction";
 import {
   CreateOrderRequest,
   CreateOrderResponse,
@@ -8,16 +9,24 @@ import { OrderRepository } from "../repositories/order-repository";
 
 export class OrderService {
   private orderRepository: OrderRepository;
+  private transactionHelper: TransactionHelper;
 
-  constructor(orderRepository: OrderRepository) {
+  constructor({
+    orderRepository,
+    transactionHelper,
+  }: {
+    orderRepository: OrderRepository;
+    transactionHelper: TransactionHelper;
+  }) {
     this.orderRepository = orderRepository;
+    this.transactionHelper = transactionHelper;
   }
 
   async create(
     createOrderRequest: CreateOrderRequest
   ): Promise<CreateOrderResponse> {
     try {
-      await this.orderRepository.beginTransaction();
+      await this.transactionHelper.beginTransaction();
       const orderId = await this.generateOrderId();
       await this.orderRepository.create({
         order_id: orderId,
@@ -47,13 +56,13 @@ export class OrderService {
       //   user_id: createOrderRequest?.user_id,
       //   items: createOrderRequest.items,
       // });
-      await this.orderRepository.commit();
+      await this.transactionHelper.commit();
 
       return {
         order_id: orderId,
       };
     } catch (e) {
-      await this.orderRepository.rollback();
+      await this.transactionHelper.rollback();
       throw e;
     }
   }
