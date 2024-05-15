@@ -29,9 +29,8 @@ export class UserService {
       role: "user",
     });
     const jwtToken = await generateJwtToken(createdUserId);
-    const msg = `User ${createUserRequest.email} has been created`;
-    console.log(msg);
-    onUserAction(msg);
+    // const msg = `User ${createUserRequest.email} has been created`;
+    // onUserAction(msg);
 
     return {
       token: jwtToken,
@@ -50,8 +49,8 @@ export class UserService {
     }
 
     const jwtToken = await generateJwtToken(user);
-    const msg = `User ${loginUserRequest.email} is loggin`;
-    onUserAction(msg);
+    // const msg = `User ${loginUserRequest.email} is loggin`;
+    // onUserAction(msg);
     return {
       token: jwtToken,
     };
