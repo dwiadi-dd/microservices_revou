@@ -1,10 +1,11 @@
-import { consumeFromQueue } from "../config/messageBroker";
+import { connectToRabbitMQ, consumeFromQueue } from "../config/messageBroker";
 import { NotificationRepository } from "../repositories/notification-repository";
 
 async function createNotification(
   notificationRepository: NotificationRepository
 ) {
-  consumeFromQueue("create-order", async (order: any) => {
+  const channel = await connectToRabbitMQ();
+  consumeFromQueue(channel, "create-order", async (order: any) => {
     const message = `Received new order: ${JSON.stringify(order)}`;
     console.log(message);
     try {
@@ -18,4 +19,5 @@ async function createNotification(
     }
   });
 }
+
 export { createNotification };
