@@ -13,74 +13,11 @@ export class OrderRepository {
   constructor(db: mysql.Pool) {
     this.db = db;
   }
-
-  beginTransaction(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db.getConnection((err, connection) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        connection.beginTransaction((err) => {
-          if (err) {
-            connection.release();
-            reject(err);
-            return;
-          }
-
-          this.connection = connection;
-          resolve();
-        });
-      });
-    });
-  }
-
-  commit(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.connection) {
-        reject(new Error("No active transaction"));
-        return;
-      }
-
-      this.connection.commit((err) => {
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        if (this.connection) {
-          this.connection.release();
-          this.connection = null;
-        }
-
-        resolve();
-      });
-    });
-  }
-
-  rollback(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.connection) {
-        reject(new Error("something wrong"));
-        return;
-      }
-
-      this.connection.rollback(() => {
-        if (this.connection) {
-          this.connection.release();
-          this.connection = null;
-        }
-
-        resolve();
-      });
-    });
-  }
   create(createOrderRequestHead: CreateOrderRequestHead): Promise<number> {
     return new Promise<number>((resolve, reject) => {
       console.log(createOrderRequestHead);
       const q = `INSERT INTO orders(order_id, user_id, status) 
-                values(?,?,'pending')`;
+                values(?,?,'unpaid')`;
       console.log(q);
       this.db.query(
         q,
@@ -114,6 +51,30 @@ export class OrderRepository {
           resolve();
         }
       );
+    });
+  }
+
+  cancelOrder(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const q = `
+        UPDATE orders 
+        SET status = 'cancelled' 
+        WHERE DATE_ADD(order_date, INTERVAL 30 MINUTE) <= NOW() 
+        AND status = 'unpaid'
+      `;
+
+      this.db.query(q, (err: mysql.QueryError | null, result: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        if (result.affectedRows === 0) {
+          console.log("No orders were cancelled.");
+        }
+
+        resolve();
+      });
     });
   }
 

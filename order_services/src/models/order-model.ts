@@ -26,5 +26,6 @@ export interface OrderItem {
 }
 
 export interface CreateOrderResponse {
-  order_id: string;
+  order_id: string | null;
+  message?: string;
 }

@@ -82,3 +82,17 @@ export const errorRes = async (
     message: message,
   });
 };
+
+export function handleError(statusCode: number, errorMessage: string) {
+  return (
+    req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    res.status(statusCode).json({
+      success: false,
+      data: [],
+      error_message: errorMessage,
+    });
+  };
+}

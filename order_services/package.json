@@ -20,6 +20,8 @@
     "@types/morgan": "^1.9.9",
     "@types/mysql": "^2.15.26",
     "@types/node": "^20.12.5",
+    "@types/node-schedule": "^2.1.7",
+    "@types/uuid": "^9.0.8",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.4"
   },
@@ -33,6 +35,8 @@
     "jsonwebtoken": "^9.0.2",
     "kafkajs": "^2.2.4",
     "morgan": "^1.10.0",
-    "mysql2": "^3.9.3"
+    "mysql2": "^3.9.3",
+    "node-schedule": "^2.1.1",
+    "uuid": "^9.0.1"
   }
 }
