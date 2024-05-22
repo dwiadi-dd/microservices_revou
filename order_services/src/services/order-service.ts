@@ -67,13 +67,13 @@ export class OrderService {
       sendToQueue(channel, "create-order", {
         order_id: orderId,
         user_id: createOrderRequest?.user_id,
-        items: createOrderRequest.items,
+        items: createOrderRequest?.items,
       });
 
       sendToQueue(channel, "update-stock", {
         order_id: orderId,
         user_id: createOrderRequest?.user_id,
-        items: createOrderRequest.items,
+        items: createOrderRequest?.items,
       });
 
       await this.transactionHelper.commit();
@@ -96,5 +96,19 @@ export class OrderService {
       : 0;
     const newOrderNumber = latestOrderNumber + 1;
     return "ADI" + String(newOrderNumber).padStart(6, "0");
+  }
+
+  async cancelUnpaidOrders(): Promise<void> {
+    try {
+      const channel = await connectToRabbitMQ();
+
+      const items = await this.orderRepository.cancelOrderAndGetProducts();
+      console.log("items", items);
+      sendToQueue(channel, "restore-cancelled-item", {
+        items,
+      });
+    } catch (err) {
+      console.error("An error occurred while cancelling unpaid orders:", err);
+    }
   }
 }

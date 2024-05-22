@@ -32,7 +32,7 @@ const startServer = async () => {
     app.use(authenticationMiddleware);
     app.post("/order", orderController.create);
 
-    scheduleJob(orderRepository, "*/30 * * * * *");
+    scheduleJob(orderService, "*/30 * * * * *");
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);

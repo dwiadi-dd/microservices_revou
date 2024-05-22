@@ -1,17 +1,15 @@
 import * as schedule from "node-schedule";
 import { OrderRepository } from "../repositories/order-repository";
+import { OrderService } from "../services/order-service";
 
 const updateServices =
-  (orderRepository: OrderRepository) => async (): Promise<void> => {
-    await Promise.all([orderRepository.cancelOrder()]);
+  (orderService: OrderService) => async (): Promise<void> => {
+    await Promise.all([orderService.cancelUnpaidOrders()]);
   };
 
-const scheduleJob = (
-  orderRepository: OrderRepository,
-  cronString: string
-): void => {
+const scheduleJob = (orderService: OrderService, cronString: string): void => {
   // Schedule the job to run at the specified frequency
-  schedule.scheduleJob(cronString, updateServices(orderRepository));
+  schedule.scheduleJob(cronString, updateServices(orderService));
 };
 
 export default scheduleJob;
