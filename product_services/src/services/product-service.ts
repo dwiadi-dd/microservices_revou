@@ -1,4 +1,5 @@
 import {
+  CheckStockRequest,
   CreateProductRequest,
   CreateProductResponse,
   GetProductResponse,
@@ -61,5 +62,9 @@ export class ProductService {
 
   async delete(productId: number): Promise<void> {
     await this.productRepository.delete(productId);
+  }
+
+  async checkStocks(checkStockRequest: CheckStockRequest): Promise<boolean> {
+    return await this.productRepository.checkStocks(checkStockRequest);
   }
 }

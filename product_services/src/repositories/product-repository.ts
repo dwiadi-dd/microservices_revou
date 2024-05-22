@@ -1,5 +1,10 @@
 import mysql from "mysql2";
-import { CheckStockRequest, ProductModel } from "../models/product-model";
+import {
+  CheckStockRequest,
+  ProductModel,
+  RestoreStockRequest,
+  UpdateStockRequest,
+} from "../models/product-model";
 
 export class ProductRepository {
   private sqlConnection: mysql.Pool;
@@ -96,9 +101,9 @@ export class ProductRepository {
   checkStocks(checkStockRequest: CheckStockRequest): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       const query = `
-      SELECT name, quantity 
+      SELECT name, stocks 
       FROM products 
-      WHERE id = ${checkStockRequest.product_id} AND quantity >= ${checkStockRequest.quantity};
+      WHERE product_id = '${checkStockRequest.product_id}' AND stocks >= ${checkStockRequest.quantity};
     `;
 
       this.sqlConnection.query(
@@ -112,7 +117,7 @@ export class ProductRepository {
           if (rows.length > 0) {
             resolve(true);
           } else {
-            reject(new Error("product out of stock"));
+            resolve(false);
             return;
           }
         }
@@ -120,9 +125,26 @@ export class ProductRepository {
     });
   }
 
-  updateStock(productModel: ProductModel): Promise<void> {
+  updateStock(updateProductRequest: UpdateStockRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const q = `UPDATE products p SET p.stocks = p.stocks - (SELECT op.quantity FROM ordered_products op WHERE op.product_id = ${productModel.product_id}) WHERE p.product_id = ${productModel.product_id}`;
+      const q = `UPDATE products p SET p.stocks = p.stocks - ${updateProductRequest.quantity} WHERE p.product_id = '${updateProductRequest.product_id}'`;
+      // const q = `UPDATE products p SET p.stocks = p.stocks - (SELECT op.quantity FROM ordered_products op WHERE op.product_id = ${updateProductRequest.product_id} AND  op.order_id = ${updateProductRequest.order_id}) WHERE p.product_id = ${updateProductRequest.product_id}`;
+      this.sqlConnection.query(
+        q,
+        (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve();
+        }
+      );
+    });
+  }
+
+  restoreStock(restoreStockRequest: RestoreStockRequest): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const q = `UPDATE products p SET p.stocks = p.stocks + ${restoreStockRequest.quantity} WHERE p.product_id = '${restoreStockRequest.product_id}'`;
       this.sqlConnection.query(
         q,
         (err: mysql.QueryError | null, rows: mysql.OkPacket) => {

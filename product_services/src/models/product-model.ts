@@ -28,6 +28,17 @@ export interface CheckStockRequest {
   quantity: number;
 }
 
+export interface UpdateStockRequest {
+  order_id: string;
+  product_id: string;
+  quantity: number;
+}
+
+export interface RestoreStockRequest {
+  product_id: string;
+  quantity: number;
+}
+
 export interface CreateProductResponse {
   product_id: number;
 }
