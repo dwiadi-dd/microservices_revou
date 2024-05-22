@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { kafka } from "./kafka/clients";
 dotenv.config();
 const config = {
   host: process.env.HOST || "localhost",
@@ -8,6 +9,10 @@ const config = {
   db_user: process.env.DB_USER || "root",
   db_password: process.env.DB_PASS || "",
   db_name: process.env.DB_NAME || "notifservicesdb",
+  kafka_url: process.env.KAFKA_URL || "",
+  kafka_api_key: process.env.KAFKA_KEY || "",
+  kafka_api_secret: process.env.KAFKA_API_SECRET || "",
+  kafka_resource: process.env.KAFKA_RESOURCE || "",
 };
 
 export default config;

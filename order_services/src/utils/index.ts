@@ -96,3 +96,13 @@ export function handleError(statusCode: number, errorMessage: string) {
     });
   };
 }
+
+export const formatDateToMySQL = (isoString: string) => {
+  const isoDate = new Date(isoString);
+  const mysqlDate = isoDate.toISOString().slice(0, 19).replace("T", " ");
+  return mysqlDate;
+};
+
+export function formatMysqlDatetime(date: Date): string {
+  return date.toISOString().slice(0, 19).replace("T", " ");
+}
