@@ -13,6 +13,7 @@ const config = {
   kafka_api_key: process.env.KAFKA_KEY || "",
   kafka_api_secret: process.env.KAFKA_API_SECRET || "",
   kafka_resource: process.env.KAFKA_RESOURCE || "",
+  kafka_topic: process.env.KAFKA_TOPIC || "",
 };
 
 export default config;
