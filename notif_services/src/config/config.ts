@@ -1,5 +1,4 @@
 import dotenv from "dotenv";
-import { kafka } from "./kafka/clients";
 dotenv.config();
 const config = {
   host: process.env.HOST || "localhost",

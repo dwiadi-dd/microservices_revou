@@ -1,6 +1,5 @@
 import { connectToRabbitMQ, consumeFromQueue } from "../config/messageBroker";
 import { NotificationRepository } from "../repositories/notification-repository";
-import { kafkaConsumer } from "../config/kafka/consumer";
 
 async function createNotification(
   notificationRepository: NotificationRepository

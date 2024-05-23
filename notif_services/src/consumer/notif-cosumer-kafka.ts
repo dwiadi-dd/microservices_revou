@@ -10,7 +10,7 @@ async function createNotificationKafka(
   const { consumer } = initKafka({ groupId });
   await consumer.subscribe({
     topic: config.kafka_topic,
-    fromBeginning: false,
+    fromBeginning: true,
   });
 
   await consumer.run({
@@ -23,10 +23,7 @@ async function createNotificationKafka(
       });
 
       try {
-        if (
-          order?.owner == "adi" &&
-          order?.type == "create_order_notification"
-        ) {
+        if (order?.owner == "bangkit" && order?.key == "BANGKIT-CREATE_ORDER") {
           const message = `Received new order: ${JSON.stringify(order)}`;
           notificationRepository.create(message);
 
