@@ -9,6 +9,14 @@ const config = {
   db_password: process.env.DB_PASS || "",
   db_name: process.env.DB_NAME || "orderervicesdb",
   jwt_secret: process.env.SECRET_KEY || "",
+  kafka_url: process.env.KAFKA_URL || "",
+  kafka_api_key: process.env.KAFKA_KEY || "",
+  kafka_api_secret: process.env.KAFKA_API_SECRET || "",
+  kafka_resource: process.env.KAFKA_RESOURCE || "",
+  kafka_topic: process.env.KAFKA_TOPIC || "",
+
+  product_service_url:
+    process.env.PRODUCT_SERVICE_URL || "http://localhost:5004",
 };
 
 export default config;

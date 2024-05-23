@@ -4,6 +4,7 @@ import {
   CreateOrderRequestHead,
   OrderItem,
   OrderModel,
+  OrderModelDetail,
 } from "../models/order-model";
 import { formatDateToMySQL, formatMysqlDatetime } from "../utils";
 
@@ -54,6 +55,45 @@ export class OrderRepository {
       );
     });
   }
+
+  orderDetails(orderId: string): Promise<OrderModelDetail> {
+    return new Promise<OrderModelDetail>((resolve, reject) => {
+      const q = `
+        SELECT orders.order_id, orders.user_id
+        FROM orders
+        WHERE orders.order_id = ?
+      `;
+
+      this.db.query(q, [orderId], (err: mysql.QueryError | null, rows: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        const order: OrderModelDetail = {
+          order_id: rows[0].order_id,
+          user_id: rows[0].user_id,
+        };
+
+        resolve(order);
+      });
+    });
+  }
+
+  paidOrder(orderId: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const q = `UPDATE orders SET status = 'paid' WHERE order_id = ?`;
+      this.db.query(q, [orderId], (err: mysql.QueryError | null, rows: any) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve();
+      });
+    });
+  }
+
   cancelOrderAndGetProducts(): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const now = formatMysqlDatetime(new Date());

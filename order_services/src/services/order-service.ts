@@ -11,6 +11,9 @@ import {
 import { OrderRepository } from "../repositories/order-repository";
 import { sendResponse } from "../utils";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+import config from "../config/config";
+import { publishMessageToQueue } from "../config/kafka/helper";
 export class OrderService {
   private orderRepository: OrderRepository;
   private transactionHelper: TransactionHelper;
@@ -85,6 +88,102 @@ export class OrderService {
       };
     } catch (e) {
       await this.transactionHelper.rollback();
+      throw e;
+    }
+  }
+
+  async createKafka(
+    createOrderRequest: CreateOrderRequest
+  ): Promise<CreateOrderResponse> {
+    try {
+      const channel = await connectToRabbitMQ();
+      await this.transactionHelper.beginTransaction();
+      const orderId = await this.generateOrderId();
+
+      const isStockAvailable = await axios
+        .post(`${config.product_service_url}/products/check`, {
+          items: createOrderRequest.items,
+        })
+        .then((response) => {
+          return response?.data?.data?.isStockAvailable;
+        })
+        .catch((err) => {
+          return false;
+        });
+      console.log(isStockAvailable, "isStockAvailable");
+      if (!isStockAvailable) {
+        await this.transactionHelper.rollback();
+        return {
+          order_id: "",
+          message: "Product is not available",
+        };
+      }
+
+      createOrderRequest.items.forEach(async (item) => {
+        await this.orderRepository.addOrderedProductItem({
+          order_id: orderId,
+          product_id: item.product_id,
+          quantity: item.quantity,
+        });
+      });
+
+      await this.orderRepository.create({
+        order_id: orderId,
+        user_id: createOrderRequest?.user_id,
+      });
+
+      publishMessageToQueue(config.kafka_topic, {
+        key: "BANGKIT-CREATE_ORDER",
+        owner: "bangkit",
+        data: {
+          order_id: orderId,
+          details: createOrderRequest,
+          status: "pending",
+        },
+      });
+
+      publishMessageToQueue(config.kafka_topic, {
+        key: "BANGKIT-UPDATE_STOCK",
+        owner: "bangkit",
+        data: {
+          order_id: orderId,
+          user_id: createOrderRequest?.user_id,
+          items: createOrderRequest?.items,
+        },
+      });
+
+      await this.transactionHelper.commit();
+
+      return {
+        order_id: orderId,
+        message:
+          "order is being processed, please pay the order to complete it",
+      };
+    } catch (e) {
+      await this.transactionHelper.rollback();
+      throw e;
+    }
+  }
+
+  async paidOrder(orderId: string, userId: number): Promise<string> {
+    try {
+      const orderDetails = await this.orderRepository.orderDetails(orderId);
+      if (Number(orderDetails?.user_id) !== userId) {
+        throw new Error("Unauthorized access to order details");
+      }
+
+      await this.orderRepository.paidOrder(orderId);
+
+      publishMessageToQueue(config.kafka_topic, {
+        key: "BANGKIT-PAID_ORDER",
+        owner: "bangkit",
+        data: {
+          order_id: orderId,
+          status: "paid",
+        },
+      });
+      return orderId;
+    } catch (e) {
       throw e;
     }
   }

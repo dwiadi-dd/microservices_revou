@@ -3,6 +3,10 @@ export interface OrderModel {
   user_id: number;
   status: string;
 }
+export interface OrderModelDetail {
+  order_id: string;
+  user_id: number;
+}
 
 export interface CreateOrderRequest {
   order_id: string;

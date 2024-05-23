@@ -11,6 +11,8 @@ import { authenticationMiddleware } from "./middlewares/middleware";
 import { TransactionHelper } from "./config/transaction";
 import { handleError } from "./utils";
 import scheduleJob from "./config/scheduler";
+import { connectKafka } from "./config/kafka/config";
+import { kafkaConsumers } from "./config/kafka/helper";
 
 const app = express();
 
@@ -25,14 +27,16 @@ const startServer = async () => {
       transactionHelper,
     });
     const orderController = new OrderController(orderService);
-
+    await connectKafka();
     app.use(express.json());
     app.use(cors());
     app.use(morgan("dev"));
     app.use(authenticationMiddleware);
     app.post("/order", orderController.create);
+    app.post("/orderkafka", orderController.createKafka);
+    app.post("/paidkafka", orderController.paid);
 
-    scheduleJob(orderService, "*/30 * * * * *");
+    // scheduleJob(orderService, "*/30 * * * * *");
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);
