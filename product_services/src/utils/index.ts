@@ -1,6 +1,7 @@
 import exp from "constants";
 import express, { NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import config from "../config/config";
 export const generateJwtToken = (userId: number): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
     const currentDate = new Date();
@@ -9,7 +10,7 @@ export const generateJwtToken = (userId: number): Promise<string> => {
       sub: userId,
       exp: Math.floor(fiveMinutes / 1000),
     };
-    jwt.sign(payload, "ini_secret_kematian", (err, token) => {
+    jwt.sign(payload, config.jwt_secret, (err, token) => {
       if (err) {
         reject(err);
         return;

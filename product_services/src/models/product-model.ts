@@ -22,10 +22,17 @@ export interface UpdateProductRequest {
   stocks: number;
   price: number;
 }
-
 export interface CheckStockRequest {
+  items: CheckStockRequesItems[];
+}
+
+export interface CheckStockRequesItems {
   product_id: number;
   quantity: number;
+}
+export interface UpdateStockRequestKafka {
+  order_id: string;
+  items: CheckStockRequesItems[];
 }
 
 export interface UpdateStockRequest {

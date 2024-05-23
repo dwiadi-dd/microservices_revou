@@ -1,5 +1,6 @@
 import mysql from "mysql2";
 import {
+  CheckStockRequesItems,
   CheckStockRequest,
   ProductModel,
   RestoreStockRequest,
@@ -98,7 +99,7 @@ export class ProductRepository {
     });
   }
 
-  checkStocks(checkStockRequest: CheckStockRequest): Promise<boolean> {
+  checkStocks(checkStockRequest: CheckStockRequesItems): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
       const query = `
       SELECT name, stocks 

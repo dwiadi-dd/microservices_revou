@@ -1,3 +1,4 @@
+import { TransactionHelper } from "../config/transaction";
 import {
   CheckStockRequest,
   CreateProductRequest,
@@ -9,9 +10,17 @@ import {
 import { ProductRepository } from "../repositories/product-repository";
 export class ProductService {
   private productRepository: ProductRepository;
+  private transactionHelper: TransactionHelper;
 
-  constructor(productRepository: ProductRepository) {
+  constructor({
+    productRepository,
+    transactionHelper,
+  }: {
+    productRepository: ProductRepository;
+    transactionHelper: TransactionHelper;
+  }) {
     this.productRepository = productRepository;
+    this.transactionHelper = transactionHelper;
   }
 
   async getAll(): Promise<GetProductResponse[]> {
@@ -65,6 +74,13 @@ export class ProductService {
   }
 
   async checkStocks(checkStockRequest: CheckStockRequest): Promise<boolean> {
-    return await this.productRepository.checkStocks(checkStockRequest);
+    const stockAvailabilityPromises = checkStockRequest.items.map((item: any) =>
+      this.productRepository.checkStocks(item)
+    );
+    const stockAvailability = await Promise.all(stockAvailabilityPromises);
+
+    const isStockAvailableForAll = stockAvailability.every(Boolean);
+
+    return isStockAvailableForAll;
   }
 }

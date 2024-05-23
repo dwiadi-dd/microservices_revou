@@ -1,9 +1,11 @@
 import express from "express";
 import { ProductService } from "../services/product-service";
 import {
+  CheckStockRequest,
   CreateProductRequest,
   UpdateProductRequest,
 } from "../models/product-model";
+import { sendResponse } from "../utils";
 
 export class ProductController {
   productService: ProductService;
@@ -63,6 +65,23 @@ export class ProductController {
       res
         .status(200)
         .json({ data: `product with id: ${productId} is deleted` });
+    } catch (err) {
+      let errorMessage = "server error";
+      if (err instanceof Error) errorMessage = err.message;
+      console.error("failed to delete product", err);
+      res.status(500).json({ error: errorMessage });
+    }
+  };
+
+  checkStocks = async (req: express.Request, res: express.Response) => {
+    try {
+      const checkStockRequest = req.body as CheckStockRequest;
+
+      const isStockAvailable = await this.productService.checkStocks(
+        checkStockRequest
+      );
+      // res.status(200).json({ data: { isStockAvailable } });
+      sendResponse(res, 200, true, { isStockAvailable }, "");
     } catch (err) {
       let errorMessage = "server error";
       if (err instanceof Error) errorMessage = err.message;
