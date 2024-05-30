@@ -27,17 +27,17 @@ const startServer = async () => {
       transactionHelper,
     });
     const productController = new ProductController(productService);
-    const productConsumer = new ProductConsumerKafka(
-      productRepository,
-      transactionHelper
-    );
+    // const productConsumer = new ProductConsumerKafka(
+    //   productRepository,
+    //   transactionHelper
+    // );
 
     app.use(express.json());
     app.use(cors());
     app.use(morgan("dev"));
-    await connectKafka();
-    await kafkaConsumers(productConsumer);
-    // startQueueListener(productRepository, transactionHelper);
+    // await connectKafka();
+    // await kafkaConsumers(productConsumer);
+    startQueueListener(productRepository, transactionHelper);
 
     app.get("/products", productController.getAll);
     app.post("/products", productController.create);

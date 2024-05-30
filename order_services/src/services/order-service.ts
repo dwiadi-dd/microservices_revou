@@ -67,12 +67,6 @@ export class OrderService {
         user_id: createOrderRequest?.user_id,
       });
 
-      sendToQueue(channel, "create-order", {
-        order_id: orderId,
-        user_id: createOrderRequest?.user_id,
-        items: createOrderRequest?.items,
-      });
-
       sendToQueue(channel, "update-stock", {
         order_id: orderId,
         user_id: createOrderRequest?.user_id,
@@ -96,7 +90,6 @@ export class OrderService {
     createOrderRequest: CreateOrderRequest
   ): Promise<CreateOrderResponse> {
     try {
-      const channel = await connectToRabbitMQ();
       await this.transactionHelper.beginTransaction();
       const orderId = await this.generateOrderId();
 
@@ -110,7 +103,6 @@ export class OrderService {
         .catch((err) => {
           return false;
         });
-      console.log(isStockAvailable, "isStockAvailable");
       if (!isStockAvailable) {
         await this.transactionHelper.rollback();
         return {
@@ -188,6 +180,42 @@ export class OrderService {
     }
   }
 
+  async paidOrderRabbit(orderId: string, userId: number): Promise<string> {
+    try {
+      const channel = await connectToRabbitMQ();
+
+      const orderDetails = await this.orderRepository.orderDetails(orderId);
+      if (Number(orderDetails?.user_id) !== userId) {
+        throw new Error("Unauthorized access to order details");
+      }
+
+      await this.orderRepository.paidOrder(orderId);
+
+      sendToQueue(channel, "paid-order", {
+        order_id: orderId,
+        status: "paid",
+      });
+
+      return orderId;
+    } catch (e) {
+      throw e;
+    }
+  }
+  async cancelOrderKafka(): Promise<void> {
+    try {
+      const items = await this.orderRepository.cancelOrderAndGetProducts();
+      publishMessageToQueue(config.kafka_topic, {
+        key: "BANGKIT-RESTORE_CANCELLED_ITEM",
+        owner: "bangkit",
+        data: {
+          items,
+        },
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
+
   async generateOrderId(): Promise<string> {
     const latestOrderId = await this.orderRepository.getLatestOrderId();
     const latestOrderNumber = latestOrderId
@@ -202,7 +230,24 @@ export class OrderService {
       const channel = await connectToRabbitMQ();
 
       const items = await this.orderRepository.cancelOrderAndGetProducts();
-      console.log("items", items);
+      const groupedItems = items.reduce(
+        (acc: Record<string, any>, item: any) => {
+          const { order_id, ...rest } = item;
+          if (!acc[order_id]) {
+            acc[order_id] = { order_id, items: [rest] };
+          } else {
+            acc[order_id].items.push(rest);
+          }
+          return acc;
+        },
+        {}
+      );
+      const formattedItems = Object.values(groupedItems);
+
+      console.log(
+        "Cancelling unpaid orders:",
+        JSON.stringify(formattedItems, null, 2)
+      );
       sendToQueue(channel, "restore-cancelled-item", {
         items,
       });

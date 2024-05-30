@@ -61,7 +61,7 @@ services:
     ports:
       - "5001:5001"
     environment:
-      SECRET_KEY: ""
+      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
       HOST: "mysql-docker-micros"
       HOST_PORT: 5001
       DB_HOST: "mysql-docker-micros"
@@ -69,7 +69,8 @@ services:
       DB_USER: "root"
       DB_PASS: "ROOT"
       DB_NAME: "userservicesdb"
-      RABBIT_HOST: "rabbitmq-micros"
+      RABBITMQ_HOST: "rabbitmq-micros"
+
     networks:
       - microservices
     depends_on:
@@ -82,7 +83,7 @@ services:
     ports:
       - "5003:5003"
     environment:
-      SECRET_KEY: ""
+      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
       HOST: "mysql-docker-micros"
       HOST_PORT: 5003
       DB_HOST: "mysql-docker-micros"
@@ -90,7 +91,53 @@ services:
       DB_USER: "root"
       DB_PASS: "ROOT"
       DB_NAME: "notifservicesdb"
-      RABBIT_HOST: "rabbitmq-micros"
+      RABBITMQ_HOST: "rabbitmq-micros"
+
+    networks:
+      - microservices
+    depends_on:
+      - mysql-docker-micros
+      - rabbitmq-micros
+
+  order-service:
+    container_name: order-service
+    build: ./order_services
+    ports:
+      - "5002:5002"
+    environment:
+      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
+      HOST: "mysql-docker-micros"
+      HOST_PORT: 5002
+      DB_HOST: "mysql-docker-micros"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASS: "ROOT"
+      DB_NAME: "orderservicesdb"
+      RABBITMQ_HOST: "rabbitmq-micros"
+
+      PRODUCT_SERVICE_URL: "http://product-service:5004"
+    networks:
+      - microservices
+    depends_on:
+      - mysql-docker-micros
+      - rabbitmq-micros
+
+  product-service:
+    container_name: product-service
+    build: ./product_services
+    ports:
+      - "5004:5004"
+    environment:
+      SECRET_KEY: "secret_ini_rahasia_yang_sangat_amat_rahasia_banget"
+      HOST: "mysql-docker-micros"
+      HOST_PORT: 5004
+      DB_HOST: "mysql-docker-micros"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASS: "ROOT"
+      DB_NAME: "productservicesdb"
+      RABBITMQ_HOST: "rabbitmq-micros"
+
     networks:
       - microservices
     depends_on:

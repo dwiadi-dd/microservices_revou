@@ -60,7 +60,7 @@ export class OrderController {
     try {
       const orderId = req.body.order_id;
       const userId = req.app.locals.userId as number;
-      await this.orderService.paidOrder(orderId, userId);
+      await this.orderService.paidOrderRabbit(orderId, userId);
 
       sendResponse(
         res,

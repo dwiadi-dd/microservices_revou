@@ -1,25 +1,44 @@
-Mini Project Assignment:
-Create Microservices Using Docker
+# Microservice System Overview
 
+This system consists of four main services: User, Order Service, Product Service, and Message Service. These services interact with each other and with Kafka, a distributed streaming platform.
 
-DELIVERABLES
-After this project, students will be able to understand how microservice work internally.
+## Services
 
-Description
-Microservice is a modern architecture that brings huge advantages. On the other hand, it also brings some limitations if we don't handle it properly.
-In this assignment, we will try to create simple microservices that can talk to each other to create end-to-end functionalities. This microservices will be about e-commerce where a user can create an order. The process will involve check authentication and authorization, inventory check whether the product is still available or not, send notification, etc.
-Services to be created are not limited to:
-API Gateway
-Order Serviceho
-Inventory / Product Service
-Notification Service
-The tech stack of each service can vary if you want, no limitation on that. To make it smooth, try to containerize the service. 
-You can split the service into more components if needed. The communication way is up to you, you can use either sync or async or combine. Please explain the trade-off and reason for your choice during the presentation.
-The database is also up to you along with the schema, please choose wisely. Remember, 1 service 1 database.
-[Optional] You can provide the documentation to the client like how to interact with the system. The tools to create the documentation is up to you.
-[Optional] You can deploy your service in any platform so other can access it online
+### User
 
-SKILL SET
-✅ API
-✅ Database
-✅ Microservice
+The User initiates the process by sending an Order Request to the Order Service.
+
+### Order Service
+
+The Order Service receives the Order Request from the User and checks the availability of the products in the order by making a REST call to the Product Service.
+
+- If any product in the order is unavailable, the Order Service informs the User that the Order was not made.
+- If all products are available, the Order Service publishes an order request (create-order) and an update stock (update-stock) message to Kafka.
+
+### Product Service
+
+The Product Service checks the availability of the products in the order. If an update stock (update-stock) message is received from Kafka, the Product Service updates the stock of the products.
+
+### Message Service
+
+The Message Service receives an Order Status (unpaid) message from Kafka.
+
+## Kafka
+
+Kafka is used as a message broker to facilitate communication between services. It handles messages of types: create-order, cancel-order, paid-order, update-stock, and restore-canceled-item.
+
+## API Endpoints
+
+The system exposes several API endpoints as defined in the `openapi.yaml` file. Here are some of the key endpoints:
+
+- POST `/orders/order`: Endpoint to create an order via Kafka. The request body should contain an array of items, where each item has a `product_id` and a `quantity`.
+- POST `/orders/paid`: Endpoint to mark an order as paid via Kafka. The request body should contain an `order_id`.
+- GET `/products`: Endpoint to retrieve a list of products. Each product has a `product_id`, `stocks`, `name`, and `price`.
+
+Please refer to the `openapi.yaml` file for the full API specification.
+
+## Sequence Diagram
+
+The sequence of interactions between the services is illustrated in the following sequence diagram:
+
+![Sequence Diagram](path/to/sequence_diagram.png)

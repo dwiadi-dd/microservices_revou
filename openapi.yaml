@@ -1,0 +1,262 @@
+openapi: 3.0.0
+info:
+  title: User Microservices (Adi Bangkit)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    variables:
+      base_url:
+        default: https://localhost:8000
+        description: local
+tags:
+  - name: User
+
+paths:
+  /users/user/register:
+    post:
+      tags:
+        - User
+      summary: Register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                fullname:
+                  type: string
+              example:
+                email: string
+                password: string
+                name: string
+      responses:
+        "201":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    token: string
+                  error_message: ""
+
+        "409":
+          description: Failed response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: false
+                  data: []
+                  error_message: "string"
+  /users/user/login:
+    post:
+      tags:
+        - User
+      summary: Login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+              example:
+                email: test@email.com
+                password: Password123
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    token: string
+                  error_message: string
+  /orders/paidkafka:
+    post:
+      tags:
+        - Order
+      summary: Paid Kafka Order
+      description: Endpoint to mark an order as paid via Kafka
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_id
+              properties:
+                order_id:
+                  type: string
+              example:
+                order_id: string
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    order_id: string
+  /orders/order:
+    post:
+      tags:
+        - Order
+      summary: Create Kafka Order
+      description: Endpoint to create an order via Kafka
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - product_id
+                      - quantity
+                    properties:
+                      product_id:
+                        type: string
+                      quantity:
+                        type: integer
+              example:
+                items:
+                  - product_id: "COD001"
+                    quantity: 9
+                  - product_id: "FRT001"
+                    quantity: 5
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  success: true
+                  data:
+                    order_id: string
+  /products/products:
+    get:
+      tags:
+        - Product
+      summary: Get Products
+      description: Endpoint to retrieve a list of products
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        product_id:
+                          type: string
+                        stocks:
+                          type: integer
+                        name:
+                          type: string
+                        price:
+                          type: number
+              example:
+                data:
+                  - product_id: "string"
+                    stocks: 0
+                    name: "string"
+                    price: 0
+components:
+  schemas:
+    Ping:
+      properties:
+        success:
+          type: boolean
+        status:
+          type: number
+        message:
+          type: string
+      example:
+        success: true
+        status: 200
+        message: "Ticket Reservation API"
+
+    Error:
+      properties:
+        success:
+          type: boolean
+        status:
+          type: boolean
+        error_message:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  responses:
+    Unauthorized:
+      description: Unauthorized response
+      content:
+        application/json:
+          schema:
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
+            example:
+              success: false
+              message: "invalid signature"
+    Forbidden:
+      description: Forbidden response
+      content:
+        application/json:
+          schema:
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
+            example:
+              success: false
+              message: "You are not allowed"

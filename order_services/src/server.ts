@@ -27,7 +27,7 @@ const startServer = async () => {
       transactionHelper,
     });
     const orderController = new OrderController(orderService);
-    await connectKafka();
+    // await connectKafka();
     app.use(express.json());
     app.use(cors());
     app.use(morgan("dev"));
@@ -36,7 +36,7 @@ const startServer = async () => {
     app.post("/orderkafka", orderController.createKafka);
     app.post("/paidkafka", orderController.paid);
 
-    // scheduleJob(orderService, "*/30 * * * * *");
+    scheduleJob(orderService, "*/30 * * * * *");
   } catch (err) {
     console.error("failed to start server", err);
     process.exit(1);

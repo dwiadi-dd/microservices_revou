@@ -25,19 +25,24 @@ const kafkaConsumers = async (notificationRepository: NotificationRepository) =>
           );
           let notifMessage: string = "";
 
-          if (owner == "bangkit") {
+          if (owner == "bangkit" && data != null) {
             switch (key) {
               case "BANGKIT-CREATE_ORDER":
                 notifMessage = `Received new order: ${JSON.stringify(data)}`;
+                notificationRepository.create(notifMessage);
                 break;
               case "BANGKIT-PAID_ORDER":
                 notifMessage = `Order has been paid: ${JSON.stringify(data)}`;
+                notificationRepository.create(notifMessage);
+                break;
+              case "BANGKIT-CANCEL_ORDER":
+                notifMessage = `cancel order: ${JSON.stringify(data)}`;
+                notificationRepository.create(notifMessage);
+
                 break;
               default:
                 break;
             }
-
-            notificationRepository.create(notifMessage);
           }
         } catch (error) {
           console.error("Error creating notification:", error);
@@ -45,42 +50,5 @@ const kafkaConsumers = async (notificationRepository: NotificationRepository) =>
       },
     });
   };
-
-// async function createNotificationKafka(
-//   notificationRepository: NotificationRepository
-// ) {
-//   const groupId = "bangkit-notif-order-service";
-
-//   const { consumer } = initKafka({ groupId });
-//   await consumer.subscribe({
-//     topic: config.kafka_topic,
-//     fromBeginning: true,
-//   });
-
-//   await consumer.run({
-//     eachMessage: async ({ topic, partition, message }) => {
-//       const order = JSON.parse(message.value?.toString() as string) as any;
-//       console.log({
-//         value: order,
-//         topic,
-//         partition,
-//       });
-
-//       try {
-//         if (order?.owner == "bangkit" && order?.key == "BANGKIT-CREATE_ORDER") {
-//           const message = `Received new order: ${JSON.stringify(order)}`;
-//           notificationRepository.create(message);
-
-//           console.log("Kafka - Notification created for order:", message);
-//         }
-//       } catch (error) {
-//         console.error("Error creating notification:", error);
-//       }
-//     },
-//   });
-//   await consumer.connect();
-// }
-
-// export { createNotificationKafka };
 
 export { publishMessageToQueue, kafkaConsumers };

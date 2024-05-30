@@ -17,10 +17,8 @@ export class OrderRepository {
   }
   create(createOrderRequestHead: CreateOrderRequestHead): Promise<number> {
     return new Promise<number>((resolve, reject) => {
-      console.log(createOrderRequestHead);
       const q = `INSERT INTO orders(order_id, user_id, status) 
                 values(?,?,'unpaid')`;
-      console.log(q);
       this.db.query(
         q,
         [createOrderRequestHead.order_id, createOrderRequestHead.user_id],
@@ -37,10 +35,8 @@ export class OrderRepository {
   }
   addOrderedProductItem(orderItem: OrderItem): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      console.log(orderItem);
       const q = `INSERT INTO ordered_products(order_id, product_id, quantity) 
                 values(?,?,?)`;
-      console.log(q);
       this.db.query(
         q,
         [orderItem.order_id, orderItem.product_id, orderItem.quantity],
@@ -82,7 +78,7 @@ export class OrderRepository {
 
   paidOrder(orderId: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const q = `UPDATE orders SET status = 'paid' WHERE order_id = ?`;
+      const q = `UPDATE orders SET status = 'paid' WHERE order_id = ? AND status = 'unpaid'`;
       this.db.query(q, [orderId], (err: mysql.QueryError | null, rows: any) => {
         if (err) {
           reject(err);
@@ -97,7 +93,6 @@ export class OrderRepository {
   cancelOrderAndGetProducts(): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       const now = formatMysqlDatetime(new Date());
-      console.log(now);
       const updateOrdersQuery = `
         UPDATE orders 
         SET status = 'cancelled', cancelled_at = ?
@@ -116,7 +111,6 @@ export class OrderRepository {
           if (result.affectedRows === 0) {
             console.log("No orders were cancelled.");
           }
-
           const selectProductsQuery = `
             SELECT orders.order_id, ordered_products.product_id, ordered_products.quantity
             FROM orders

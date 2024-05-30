@@ -29,6 +29,9 @@ async function updateStockListener(
       });
 
       await transactionHelper.commit();
+      sendToQueue(channel, "create-order", {
+        product,
+      });
     } catch (error) {
       await transactionHelper.rollback();
       console.error("Error updating stock:", error);
@@ -58,6 +61,15 @@ async function restoreStockListener(
           quantity: item.quantity,
         });
       });
+      const uniqueOrderIds = [
+        ...new Set(product?.items?.map((item: any) => item.order_id)),
+      ];
+
+      uniqueOrderIds.forEach((order_Id) => {
+        sendToQueue(channel, "cancel-order", {
+          order_id: order_Id,
+        });
+      });
 
       await transactionHelper.commit();
     } catch (error) {
@@ -66,6 +78,7 @@ async function restoreStockListener(
     }
   });
 }
+
 async function checkStockListener(
   productRepository: ProductRepository,
   transactionHelper: TransactionHelper

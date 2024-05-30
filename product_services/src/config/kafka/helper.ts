@@ -24,6 +24,9 @@ const kafkaConsumers = async (productConsumer: ProductConsumerKafka) => {
             case "BANGKIT-UPDATE_STOCK":
               productConsumer.update(data);
               break;
+            case "BANGKIT-RESTORE_CANCELLED_ITEM":
+              productConsumer.restore(data);
+              break;
             default:
               break;
           }

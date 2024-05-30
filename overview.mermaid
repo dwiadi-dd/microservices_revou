@@ -1,0 +1,40 @@
+sequenceDiagram
+    participant User
+    participant OrderService as Order Service
+    participant ProductService as Product Service
+    participant MessageService as Message Service
+    participant Kafka as Kafka (types: create-order, cancel-order, paid-order, update-stock, restore-canceled-item)
+    
+    User ->> OrderService: Order Request
+    OrderService ->> ProductService: Check via REST
+    ProductService ->> ProductService: Check Product Availability
+    
+    alt Any product is unavailable
+        OrderService ->> User: Order Not Made
+    else All products are available
+        OrderService ->> Kafka: Publish order request (create-order)
+        OrderService ->> Kafka: Publish update stock (update-stock)
+        Kafka ->> ProductService: Update Stock (update-stock)
+        Kafka ->> MessageService: Order Status (unpaid)
+        Kafka ->> OrderService: Order Status (unpaid)
+        OrderService ->> User: Order Made (Unpaid)
+        OrderService ->> Kafka: Update product stock (product-update)
+        OrderService ->> OrderService: Start 30-Minute Timer
+    end
+    
+    User ->> OrderService: Payment Received
+    OrderService ->> OrderService: Update Order Status to Paid
+    OrderService ->> Kafka: Publish payment status (paid-order)
+    Kafka ->> MessageService: Order Status = paid (paid-order)
+
+    
+    par Order Not Paid Within 30 Minutes
+        OrderService ->> OrderService: Update Order Status to Cancelled
+        OrderService ->> Kafka: Restore product stock (restore-canceled-item)
+        Kafka ->> ProductService: Product Update (restore-canceled-item)
+        ProductService ->> ProductService: Update Stock
+        ProductService ->> Kafka: send message cancel order(cancel-order)
+        Kafka ->> MessageService: Order Status = fail (cancel-order)
+    
+    end
+    

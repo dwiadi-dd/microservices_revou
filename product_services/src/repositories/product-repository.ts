@@ -125,19 +125,38 @@ export class ProductRepository {
       );
     });
   }
-
   updateStock(updateProductRequest: UpdateStockRequest): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const q = `UPDATE products p SET p.stocks = p.stocks - ${updateProductRequest.quantity} WHERE p.product_id = '${updateProductRequest.product_id}'`;
-      // const q = `UPDATE products p SET p.stocks = p.stocks - (SELECT op.quantity FROM ordered_products op WHERE op.product_id = ${updateProductRequest.product_id} AND  op.order_id = ${updateProductRequest.order_id}) WHERE p.product_id = ${updateProductRequest.product_id}`;
+      const selectQuery = `SELECT p.stocks FROM products p WHERE p.product_id = '${updateProductRequest.product_id}' FOR UPDATE`;
+
       this.sqlConnection.query(
-        q,
-        (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
+        selectQuery,
+        (err: mysql.QueryError | null, results: any) => {
           if (err) {
-            reject(err);
-            return;
+            return reject(err);
           }
-          resolve();
+
+          if (results.length === 0) {
+            return reject(new Error("Product not found"));
+          }
+
+          const currentStock = results[0].stocks;
+
+          if (currentStock < updateProductRequest.quantity) {
+            return reject(new Error("Insufficient stock"));
+          }
+
+          const updateQuery = `UPDATE products p SET p.stocks = p.stocks - ${updateProductRequest.quantity} WHERE p.product_id = '${updateProductRequest.product_id}'`;
+
+          this.sqlConnection.query(
+            updateQuery,
+            (err: mysql.QueryError | null, rows: mysql.OkPacket) => {
+              if (err) {
+                return reject(err);
+              }
+              resolve();
+            }
+          );
         }
       );
     });

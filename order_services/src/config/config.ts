@@ -8,6 +8,7 @@ const config = {
   db_user: process.env.DB_USER || "root",
   db_password: process.env.DB_PASS || "",
   db_name: process.env.DB_NAME || "orderervicesdb",
+  rabbitmq_host: process.env.RABBIT_HOST || "localhost",
   jwt_secret: process.env.SECRET_KEY || "",
   kafka_url: process.env.KAFKA_URL || "",
   kafka_api_key: process.env.KAFKA_KEY || "",
@@ -16,7 +17,7 @@ const config = {
   kafka_topic: process.env.KAFKA_TOPIC || "",
 
   product_service_url:
-    process.env.PRODUCT_SERVICE_URL || "http://localhost:5004",
+    process.env.PRODUCT_SERVICE_URL || "http://product-service:5004",
 };
 
 export default config;

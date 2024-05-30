@@ -11,3 +11,5 @@ user_services/.env
 
 dump
 docker-compose.yml
+docker-compose.*.yml
+.docker/
